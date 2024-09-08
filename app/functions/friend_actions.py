@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, status, APIRouter
+from fastapi import Depends, HTTPException, status, APIRouter,Query
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from .Basic.token_manipulations import check_and_get_current_user, get_db
@@ -10,8 +10,9 @@ class UserBaseModel(BaseModel):
     id: int
     name: str
     surname: str
-    profile_picture: Optional[str] 
-    score: int
+    profile_picture: Optional[str] = None
+    invations:str
+    score: Optional[int] = None
 
 class FriendM(BaseModel):
     friend_id: int
@@ -76,12 +77,11 @@ def remove_friend(data:FriendM, current_user: User = Depends(check_and_get_curre
     return {"detail": "Friend removed successfully"}
 
 @friend_actions_routes.get("/api/person/user-info", response_model=UserBaseModel)
-def get_user_info(data:UserM):
-    user_id = data.user_id
+def get_user_info(user_id: int = Query(...)):
     db = next(get_db())
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
-        raise HTTPException(418, "No such teapot found")
+        raise HTTPException(status_code=404, detail="User not found")
 
     return UserBaseModel(
         id=user.id, 

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, ForeignKey, Table,Boolean
+from sqlalchemy import Column, Integer, String, Date, ForeignKey, Table,Boolean,Text
 from sqlalchemy.orm import relationship
 from app.functions.Basic.database import Base
 
@@ -30,18 +30,19 @@ class User(Base):
     score = Column(Integer, default=0)
     books = relationship("Book", secondary=user_books, back_populates="users")
     clubs = relationship("Club", back_populates="users")
+
 class Book(Base):
     __tablename__ = 'books'
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String)
-    text = Column(String)
+    description = Column(String)
     date_of_publication = Column(Date)
-    picture = Column(String, default=None)
+    picture = Column(Text, default=None)
+    book_file = Column(Text, default=None)
     stars = Column(Integer, default=0)
     Responce_id = Column(Integer, default=None)
     users = relationship("User", secondary=user_books, back_populates="books")
-
 
 class ClubUser(Base):
     __tablename__ = 'club_users'

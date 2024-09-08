@@ -2,7 +2,6 @@ from fastapi import Depends, HTTPException, status, APIRouter,Body
 from sqlalchemy.orm import Session
 from .Basic.token_manipulations import check_and_get_current_user, get_db
 from .Basic.models import User, Club
-from .Basic.int_to_string import int_to_string
 from pydantic import BaseModel
 from typing import List,Optional
 
@@ -159,13 +158,13 @@ def delete_invation_user(datas: InviteP, current_user: User = Depends(check_and_
     user = db.query(Club).filter(user.id==user_id).first()
     if not user:
         raise HTTPException(418, "No such user found")
-    if not user.invations.split(".").count(int_to_string(club_id)):
+    if not user.invations.split(".").count(str(club_id)):
         raise HTTPException(418, "User has not been invited")
     if user.clubs.contains(club):
         raise HTTPException(418, "User is member of the club")
     tmp = current_user.invations.split(".")
     current_user.invations = ""
-    tmp.remove(int_to_string(club_id))
+    tmp.remove(str(club_id))
     for t in tmp:
         current_user.invations += "." + t
     current_user.invations.pop(0)
@@ -179,7 +178,7 @@ def accept_invation(data: AloneC, current_user: User = Depends(check_and_get_cur
         raise HTTPException(418, "No such club found")
     if club in current_user.clubs:
         raise HTTPException(418, "You are already a member of the club")
-    invations_list = [int(inv) for inv in current_user.invations.split(".") if inv]
+    invations_list = [int(inv) for inv in current_user.invations.split(".") ]
     if club_id not in invations_list:
         raise HTTPException(418, "You are not invited")
     invations_list.remove(club_id)
@@ -197,11 +196,11 @@ def decline_invation(club_id: int, current_user: User = Depends(check_and_get_cu
         raise HTTPException(418, "No such club found")
     if not current_user.clubs.contains(club):
         raise HTTPException(418, "you are not a member of the club")
-    if current_user.invations.split(".").count(int_to_string(club_id)) == 0:
+    if current_user.invations.split(".").count(str(club_id)) == 0:
         raise HTTPException(418, "you are not invited")
     tmp = current_user.invations.split(".")
     current_user.invations = ""
-    tmp.remove(int_to_string(club_id))
+    tmp.remove(str(club_id))
     for t in tmp:
         current_user.invations += "." + t
     current_user.invations.pop(0)
